@@ -1,0 +1,1 @@
+Program ini di buat untuk keperluan kantor, gunanya untuk melakukan split data pada csv yang SN device nya banyak. misal ada 19.000 SN, kemudian pada aplikasi ini kita input SN awal dan SN akhir sesuai csv yang kita upload, lalu kemudian input value split yaitu jumlah SN per file CSV. 
