@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSV Processor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #loading {
+            display: none;
+            margin-top: 20px;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid red;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>CSV Processor</h1>
+    <form id="csvForm">
+        <div class="form-group">
+            <label for="csvFile">File CSV:</label>
+            <input type="file" id="csvFile" accept=".csv" required>
+        </div>
+        <div class="form-group">
+            <label for="startValue">Nilai Awal:</label>
+            <input type="text" id="startValue" placeholder="Contoh: V4BB01742820" required>
+        </div>
+        <div class="form-group">
+            <label for="endValue">Nilai Akhir:</label>
+            <input type="text" id="endValue" placeholder="Contoh: V4BB01742918" required>
+        </div>
+        <div class="form-group">
+            <label for="splitSize">Jumlah Data per File:</label>
+            <input type="number" id="splitSize" placeholder="Contoh: 10" required>
+        </div>
+        <button type="submit">Proses CSV</button>
+    </form>
+    <div id="loading">Memproses...</div>
+    <div id="error" class="error"></div>
+
+    <script>
+        document.getElementById('csvForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const errorDiv = document.getElementById('error');
+            const loadingDiv = document.getElementById('loading');
+            
+            errorDiv.style.display = 'none';
+            loadingDiv.style.display = 'block';
+
+            const formData = new FormData();
+            formData.append('csvFile', document.getElementById('csvFile').files[0]);
+            formData.append('startValue', document.getElementById('startValue').value);
+            formData.append('endValue', document.getElementById('endValue').value);
+            formData.append('splitSize', document.getElementById('splitSize').value);
+
+            try {
+                const response = await fetch('http://localhost:3000/process-csv', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'split_files.zip';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                } else {
+                    const errorData = await response.json();
+                    errorDiv.textContent = `Error: ${errorData.error}`;
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                errorDiv.textContent = `Error: ${error.message}`;
+                errorDiv.style.display = 'block';
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
